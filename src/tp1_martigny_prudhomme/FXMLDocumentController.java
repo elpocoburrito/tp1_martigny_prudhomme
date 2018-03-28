@@ -47,6 +47,14 @@ public class FXMLDocumentController implements Initializable {
     private static int[][] tabNotes = new int[NB_ELEVES][NB_EVALS + 2]; //
     //private static int[] tabDA = new int[NB_ELEVES];
     private static int[] index = new int[NB_ELEVES];
+    
+    enum Titre {
+        DA, Examen1, Examen2, TP1, TP2, Total
+    };
+        
+    public String modeToggle = "default";
+    private Utilitaires util = new Utilitaires();
+    
     @FXML
     private Label lblNbEleves;
     @FXML
@@ -73,24 +81,6 @@ public class FXMLDocumentController implements Initializable {
     private Label lblMinTP1;
     @FXML
     private Label lblMinTP2;
-
-    @FXML
-    private void lsvDAClick(MouseEvent event) {
-        Alert alert = new Alert(AlertType.ERROR);
-        alert.setTitle("Erreur!");
-        alert.setContentText("Veuillez effectuer une sélection dans la liste de DA si-haut.");
-
-        if (lsvDA.getSelectionModel().isEmpty() == true) {
-            alert.showAndWait();
-        }
-    }
-
-    enum Titre {
-        DA, Examen1, Examen2, TP1, TP2, Total
-    };
-
-    public String modeToggle = "default";
-    private Utilitaires util = new Utilitaires();
 
     @FXML
     private GridPane gridNotes;
@@ -235,7 +225,18 @@ public class FXMLDocumentController implements Initializable {
         trierGrid();
         actualiserGrid();
     }
+    
+    @FXML
+    private void lsvDAClick(MouseEvent event) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle("Erreur!");
+        alert.setContentText("Veuillez effectuer une sélection dans la liste de DA si-haut.");
 
+        if (lsvDA.getSelectionModel().isEmpty() == true) {
+            alert.showAndWait();
+        }
+    }
+    
     //***   Gestion du DnD sur la poubelle ***//
     @FXML
     private void onDragDetectedLsv(MouseEvent event) {
@@ -317,22 +318,6 @@ public class FXMLDocumentController implements Initializable {
         }
     }
 
-    public void remplirStatistiques() {
-        lblNbEleves.setText("Nombre d'élèves: " + String.valueOf(nbEleves));
-        lblMoyEx1.setText(String.valueOf(util.moyenneEval(tabNotes, 1)));
-        lblMoyEx2.setText(String.valueOf(util.moyenneEval(tabNotes, 2)));
-        lblMoyTP1.setText(String.valueOf(util.moyenneEval(tabNotes, 3)));
-        lblMoyTP2.setText(String.valueOf(util.moyenneEval(tabNotes, 4)));
-        lblMaxEx1.setText(String.valueOf(util.maxEval(tabNotes, 1)));
-        lblMaxEx2.setText(String.valueOf(util.maxEval(tabNotes, 2)));
-        lblMaxTP1.setText(String.valueOf(util.maxEval(tabNotes, 3)));
-        lblMaxTP2.setText(String.valueOf(util.maxEval(tabNotes, 4)));
-        lblMinEx1.setText(String.valueOf(util.minEval(tabNotes, 1)));
-        lblMinEx2.setText(String.valueOf(util.minEval(tabNotes, 2)));
-        lblMinTP1.setText(String.valueOf(util.minEval(tabNotes, 3)));
-        lblMinTP2.setText(String.valueOf(util.minEval(tabNotes, 4)));
-    }
-
     public void trierGrid() {
         int selected = cmbTris.getSelectionModel().getSelectedIndex();
         switch (selected) {
@@ -403,5 +388,21 @@ public class FXMLDocumentController implements Initializable {
                 ((Button) obj).setDisable(!toggle);
             }
         }
+    }
+    
+    public void remplirStatistiques() {
+        lblNbEleves.setText("Nombre d'élèves: " + String.valueOf(nbEleves));
+        lblMoyEx1.setText(String.valueOf(util.moyenneEval(tabNotes, 1)));
+        lblMoyEx2.setText(String.valueOf(util.moyenneEval(tabNotes, 2)));
+        lblMoyTP1.setText(String.valueOf(util.moyenneEval(tabNotes, 3)));
+        lblMoyTP2.setText(String.valueOf(util.moyenneEval(tabNotes, 4)));
+        lblMaxEx1.setText(String.valueOf(util.maxEval(tabNotes, 1)));
+        lblMaxEx2.setText(String.valueOf(util.maxEval(tabNotes, 2)));
+        lblMaxTP1.setText(String.valueOf(util.maxEval(tabNotes, 3)));
+        lblMaxTP2.setText(String.valueOf(util.maxEval(tabNotes, 4)));
+        lblMinEx1.setText(String.valueOf(util.minEval(tabNotes, 1)));
+        lblMinEx2.setText(String.valueOf(util.minEval(tabNotes, 2)));
+        lblMinTP1.setText(String.valueOf(util.minEval(tabNotes, 3)));
+        lblMinTP2.setText(String.valueOf(util.minEval(tabNotes, 4)));
     }
 }
