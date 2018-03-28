@@ -20,6 +20,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.ClipboardContent;
@@ -43,9 +44,46 @@ public class FXMLDocumentController implements Initializable {
     private static final int TOTAL = 5;
 
     public static int nbEleves = 0; //Compteur du nombre d'élèves
-    private static int[][] tabNotes = new int[NB_ELEVES][NB_EVALS + 1]; //
-    private static int[] tabDA = new int[NB_ELEVES];
+    private static int[][] tabNotes = new int[NB_ELEVES][NB_EVALS + 2]; //
+    //private static int[] tabDA = new int[NB_ELEVES];
     private static int[] index = new int[NB_ELEVES];
+    @FXML
+    private Label lblNbEleves;
+    @FXML
+    private Label lblMoyEx1;
+    @FXML
+    private Label lblMoyEx2;
+    @FXML
+    private Label lblMoyTP1;
+    @FXML
+    private Label lblMoyTP2;
+    @FXML
+    private Label lblMaxEx1;
+    @FXML
+    private Label lblMaxEx2;
+    @FXML
+    private Label lblMaxTP1;
+    @FXML
+    private Label lblMaxTP2;
+    @FXML
+    private Label lblMinEx1;
+    @FXML
+    private Label lblMinEx2;
+    @FXML
+    private Label lblMinTP1;
+    @FXML
+    private Label lblMinTP2;
+
+    @FXML
+    private void lsvDAClick(MouseEvent event) {
+        Alert alert = new Alert(AlertType.ERROR);
+        alert.setTitle("Erreur!");
+        alert.setContentText("Veuillez effectuer une sélection dans la liste de DA si-haut.");
+
+        if (lsvDA.getSelectionModel().isEmpty() == true) {
+            alert.showAndWait();
+        }
+    }
 
     enum Titre {
         DA, Examen1, Examen2, TP1, TP2, Total
@@ -91,6 +129,7 @@ public class FXMLDocumentController implements Initializable {
         garnirLsv();
         creerGrille();
         garnirGrille();
+        remplirStatistiques();
     }
 
     //***   Événements du GUI  ***//
@@ -108,12 +147,12 @@ public class FXMLDocumentController implements Initializable {
 
         //Trouve l'index a supprimer dans le GridPane. L'index est sauvegardé quand la boucle tombe sur le DA selectionné dans le GridPane.
         for (int i = 0; i < nbEleves - 1; i++) {
-            int var = tabDA[i];
+            int var = tabNotes[i][0];
             if (var == Integer.parseInt(DA)) {
                 indexASupp = i;
             }
         }
-        util.supprimer(tabDA, tabNotes, indexASupp);
+        util.supprimer(tabNotes, indexASupp);
         actualiserGrid();
     }
 
@@ -162,7 +201,7 @@ public class FXMLDocumentController implements Initializable {
                     }
                 }
                 if (notesValides) {
-                    util.ajouter(tabDA, tabNotes, notes);
+                    util.ajouter(tabNotes, notes);
                     actualiserGrid();
                     enableDataCtrls(false);
                 } else {
@@ -218,7 +257,7 @@ public class FXMLDocumentController implements Initializable {
         db = event.getDragboard();
         String contenu = db.getString();
         System.out.println(contenu);
-        util.supprimer(tabDA, tabNotes, Integer.parseInt(contenu));
+        util.supprimer(tabNotes, Integer.parseInt(contenu));
         lsvDA.getItems().remove(Integer.parseInt(contenu));
         trierGrid();
         actualiserGrid();
@@ -262,14 +301,11 @@ public class FXMLDocumentController implements Initializable {
 
         //Ajoute les DA
         int iLig = 1;
-        for (int i = 0; i < nbEleves; i++) {
-            gridNotes.add(new Text(tabDA[index[i]] + ""), 0, iLig);
-            iLig++;
-        }
+
         //Ajoute les notes
         for (int i = 0; i < nbEleves; i++) {
             for (int j = 0; j < tabNotes[i].length; j++) {
-                gridNotes.add(new Text(tabNotes[index[i]][j] + ""), j + 1, i + 1);
+                gridNotes.add(new Text(tabNotes[index[i]][j] + ""), j, i + 1);
             }
         }
     }
@@ -277,18 +313,34 @@ public class FXMLDocumentController implements Initializable {
     //Rempli le listview avec les DA d'élèves
     public void garnirLsv() {
         for (int i = 0; i < nbEleves; i++) {
-            lsvDA.getItems().add(tabDA[i]);
+            lsvDA.getItems().add(tabNotes[i][DA]);
         }
+    }
+
+    public void remplirStatistiques() {
+        lblNbEleves.setText("Nombre d'élèves: " + String.valueOf(nbEleves));
+        lblMoyEx1.setText(String.valueOf(util.moyenneEval(tabNotes, 1)));
+        lblMoyEx2.setText(String.valueOf(util.moyenneEval(tabNotes, 2)));
+        lblMoyTP1.setText(String.valueOf(util.moyenneEval(tabNotes, 3)));
+        lblMoyTP2.setText(String.valueOf(util.moyenneEval(tabNotes, 4)));
+        lblMaxEx1.setText(String.valueOf(util.maxEval(tabNotes, 1)));
+        lblMaxEx2.setText(String.valueOf(util.maxEval(tabNotes, 2)));
+        lblMaxTP1.setText(String.valueOf(util.maxEval(tabNotes, 3)));
+        lblMaxTP2.setText(String.valueOf(util.maxEval(tabNotes, 4)));
+        lblMinEx1.setText(String.valueOf(util.minEval(tabNotes, 1)));
+        lblMinEx2.setText(String.valueOf(util.minEval(tabNotes, 2)));
+        lblMinTP1.setText(String.valueOf(util.minEval(tabNotes, 3)));
+        lblMinTP2.setText(String.valueOf(util.minEval(tabNotes, 4)));
     }
 
     public void trierGrid() {
         int selected = cmbTris.getSelectionModel().getSelectedIndex();
         switch (selected) {
             case 0:
-                util.triAscDA(index, tabDA, nbEleves);
+                util.triAscDA(index, tabNotes, nbEleves);
                 break;
             case 1:
-                util.triDscDA(index, tabDA, nbEleves);
+                util.triDscDA(index, tabNotes, nbEleves);
                 break;
             case 2:
                 util.triAscNotes(index, tabNotes, TOTAL - 1, nbEleves);
@@ -311,7 +363,7 @@ public class FXMLDocumentController implements Initializable {
         while (ligneLue != null) {
             int j = 0;
             StringTokenizer tok = new StringTokenizer(ligneLue, " ");
-            tabDA[i] = Integer.parseInt(tok.nextToken());
+            //tabDA[i] = Integer.parseInt(tok.nextToken());
             while (tok.countTokens() != 0) {
                 int valeur = Integer.parseInt(tok.nextToken());
                 tabNotes[i][j] = valeur;
@@ -329,6 +381,7 @@ public class FXMLDocumentController implements Initializable {
         viderGrille();
         creerGrille();
         garnirGrille();
+        remplirStatistiques();
     }
 
     public void actualiserTxf() {

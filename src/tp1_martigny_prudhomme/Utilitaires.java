@@ -4,9 +4,7 @@ import java.util.Arrays;
 
 public class Utilitaires {
 
-    public void supprimer(int[] tabID, int[][] tab, int ligne) {
-        tabID[ligne] = 0;
-
+    public void supprimer(int[][] tab, int ligne) {
         //Supprime une ligne de notes
         for (int i = 0; i < tab[ligne].length; i++) {
             tab[ligne][i] = 0;                  //Delete Notes
@@ -14,18 +12,16 @@ public class Utilitaires {
 
         //Réorganise le tableau une ligne plus haut
         for (int i = ligne; i < tab.length - 1; i++) {
-            permuterIntID(tabID, i, 1 + i);  //Sort DA
             permuterInt(tab, i, 1 + i);       //Sort Notes
         }
         FXMLDocumentController.nbEleves--;
     }
 
-    public void ajouter(int[] tabID, int[][] tab, double[] notes) {
+    public void ajouter(int[][] tab, double[] notes) {
         int ligne = FXMLDocumentController.nbEleves;
         Arrays.toString(notes);
-        tabID[ligne] = (int) notes[0];
-        for (int i = 1; i < notes.length; i++) {
-            tab[ligne][i - 1] = (int) notes[i];
+        for (int i = 0; i < notes.length; i++) {
+            tab[ligne][i] = (int) notes[i];
         }
         FXMLDocumentController.nbEleves++;
     }
@@ -48,14 +44,13 @@ public class Utilitaires {
         tab[ind2] = transit;
     }
 
-    
-    public void triAscNotes(int[] index, int[][] tab, int colone, int nbEleves){     
+    public void triAscNotes(int[] index, int[][] tab, int colone, int nbEleves) {
         int iMin;
         //initialiser tableau tabDA     
         for (int i = 0; i < index.length; i++) {
             index[i] = i;
         }
-        
+
         for (int i = 0; i < nbEleves - 1; i++) {
             iMin = i;
             for (int j = i + 1; j < nbEleves; j++) {
@@ -66,14 +61,14 @@ public class Utilitaires {
             permuterIntID(index, iMin, i);
         }
     }
-    
-    public void triDscNotes(int[] index, int[][] tab, int colone, int nbEleves){     
+
+    public void triDscNotes(int[] index, int[][] tab, int colone, int nbEleves) {
         int iMin;
         //initialiser tableau tabDA     
         for (int i = 0; i < index.length; i++) {
             index[i] = i;
         }
-        
+
         for (int i = 0; i < tab.length - 1; i++) {
             iMin = i;
             for (int j = i + 1; j < tab.length; j++) {
@@ -84,46 +79,76 @@ public class Utilitaires {
             permuterIntID(index, iMin, i);
         }
     }
-    
-    public void triAscDA(int[] index, int[] tab, int nbEleves){     
+
+    public void triAscDA(int[] index, int[][] tab, int nbEleves) {
         int iMin;
         //initialiser tableau tabDA     
         for (int i = 0; i < index.length; i++) {
             index[i] = i;
         }
-        
+
         for (int i = 0; i < nbEleves - 1; i++) {
             iMin = i;
             for (int j = i + 1; j < nbEleves; j++) {
-                if (tab[index[iMin]] > tab[index[j]]) {
+                if (tab[index[iMin]][0] > tab[index[j]][0]) {
                     iMin = j;
                 }
             }
             permuterIntID(index, iMin, i);
         }
     }
-    
-    public void triDscDA(int[] index, int[] tab, int nbEleves){     
+
+    public void triDscDA(int[] index, int[][] tab, int nbEleves) {
         int iMin;
         //initialiser tableau tabDA     
         for (int i = 0; i < index.length; i++) {
             index[i] = i;
         }
-        
+
         for (int i = 0; i < nbEleves - 1; i++) {
             iMin = i;
             for (int j = i + 1; j < nbEleves; j++) {
-                if (tab[index[iMin]] < tab[index[j]]) {
+                if (tab[index[iMin]][0] < tab[index[j]][0]) {
                     iMin = j;
                 }
             }
             permuterIntID(index, iMin, i);
         }
     }
-    public boolean examValide(double tab[]){
-        
+
+    public double moyenneEval(int[][] tab, int col) {
+        double temp = 0;
+        double total = 0;
+
+        for (int i = 0; i < FXMLDocumentController.nbEleves; i++) {
+            total += tab[i][col];
+            temp++;
+        }
+
+        return total / temp;
     }
-    
+
+    public int minEval(int[][] tab, int col) {
+        int min = 101;
+        for (int i = 0; i < FXMLDocumentController.nbEleves; i++) {
+            if (tab[i][col] < min) {
+                min = tab[i][col];
+            }
+        }
+        return min;
+    }
+
+    public int maxEval(int[][] tab, int col) {
+        int max = 0;
+
+        for (int i = 0; i < FXMLDocumentController.nbEleves; i++) {
+            if (tab[i][col] > max) {
+                max = tab[i][col];
+            }
+        }
+        return max;
+    }
+
     public double calculerTotal(double note1, double note2, double note3, double note4) {
         return (note1 * 25 / 100) + (note2 * 30 / 100) + (note3 * 20 / 100) + (note4 * 25 / 100);
     }
