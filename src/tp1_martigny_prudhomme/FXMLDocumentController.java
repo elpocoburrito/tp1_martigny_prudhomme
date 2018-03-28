@@ -24,15 +24,15 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TransferMode;
 import javafx.scene.text.Text;
 import tp1_martigny_prudhomme.Utilitaires.*;
 
 public class FXMLDocumentController implements Initializable {
-
-    @FXML
-    private GridPane gridNotes;
-    @FXML
-    private ComboBox<String> cmbTris;
 
     private static final int NB_ELEVES = 25;
     private static final int NB_EVALS = 4;
@@ -46,11 +46,16 @@ public class FXMLDocumentController implements Initializable {
 
     public static int nbEleves = 0; //Compteur du nombre d'élèves
     private static int[][] tabNotes = new int[NB_ELEVES][NB_EVALS + 1];
+    private static int[] tabDA = new int[NB_ELEVES];
     private static int[] index = new int[NB_ELEVES];
 
     public String modeToggle = "default";
     private Utilitaires util = new Utilitaires();
 
+    @FXML
+    private GridPane gridNotes;
+    @FXML
+    private ComboBox<String> cmbTris;
     @FXML
     private TextField txfDA;
     @FXML
@@ -85,6 +90,8 @@ public class FXMLDocumentController implements Initializable {
         garnirGrille();
     }
 
+    //***   Événements du GUI  ***//
+    
     @FXML
     private void btnAjouterClick(ActionEvent event) {
         modeToggle = "ajouter";
@@ -100,13 +107,13 @@ public class FXMLDocumentController implements Initializable {
 
         //Trouve l'index a supprimer dans le GridPane. L'index est sauvegardé quand la boucle tombe sur le DA selectionné dans le GridPane.
         for (int i = 0; i < nbEleves - 1; i++) {
-            int var = index[i];
+            int var = tabDA[i];
             if (var == Integer.parseInt(DA)) {
                 indexASupp = i;
             }
         }
 
-        util.supprimer(index, tabNotes, indexASupp);
+        util.supprimer(tabDA, tabNotes, indexASupp);
         viderGrille();
         creerGrille();
         garnirGrille();
@@ -151,7 +158,7 @@ public class FXMLDocumentController implements Initializable {
                 notes[TP1] = Integer.parseInt(txfTP1.getText());
                 notes[TP2] = Integer.parseInt(txfTP2.getText());
                 notes[TOTAL] = util.calculerTotal(notes[EXA1],notes[EXA2],notes[TP1],notes[TP2]);
-                util.ajouter(index, tabNotes, notes);
+                util.ajouter(tabDA, tabNotes, notes);
                 viderGrille();
                 creerGrille();
                 garnirGrille();
@@ -181,19 +188,69 @@ public class FXMLDocumentController implements Initializable {
                 break;
         }
     }
-
-    public void enableDataCtrls(boolean toggle) {
-        Object[] objects = new Object[]{txfDA, txfExam1, txfExam2, txfTP1, txfTP2, btnAnnuler, btnOK};
-        for (Object obj : objects) {
-            if (obj instanceof TextField) {
-                ((TextField) obj).setDisable(!toggle);
-                ((TextField) obj).setText("");
-            } else if (obj instanceof Button) {
-                ((Button) obj).setDisable(!toggle);
-            }
+    
+    @FXML
+    private void cmbTriChanged(ActionEvent event) {
+        ComboBox cmb = (ComboBox) event.getSource();
+        int selected = cmb.getSelectionModel().getSelectedIndex();
+        switch(selected){
+            case 0:
+                util.triAscDA(index, tabDA);
+                break;
+            case 1:
+                util.triDscDA(index, tabDA);
+                break;
+            case 2:
+                util.triAscNotes(index, tabNotes, TOTAL-1);
+                break;
+            case 3:
+                util.triDscNotes(index, tabNotes, TOTAL-1);
+                break;
+            default:
+                break;
         }
+        viderGrille();
+        creerGrille();
+        garnirGrille();
+        
+    }
+    
+    //***   Gestion du DnD sur la poubelle ***//
+    
+    @FXML
+    private void onDragDetectedLsv(MouseEvent event) {
+        Dragboard db = lsvDA.startDragAndDrop(TransferMode.ANY);
+        ClipboardContent cbContenu = new ClipboardContent();
+        cbContenu.putString(lsvDA.getSelectionModel().getSelectedIndex()+"");
+        db.setContent(cbContenu);
+        System.out.println(lsvDA.getSelectionModel().getSelectedIndex());
     }
 
+    @FXML
+    private void onDragOverImg(DragEvent event) {
+        event.acceptTransferModes(TransferMode.ANY);
+    }
+
+    @FXML
+    private void onDragDroppedImg(DragEvent event) {
+        Dragboard db;
+        db = event.getDragboard();
+        String contenu = db.getString();
+        System.out.println(contenu);
+        util.supprimer(tabDA, tabNotes, Integer.parseInt(contenu));
+        lsvDA.getItems().remove(Integer.parseInt(contenu));
+        
+        viderGrille();
+        creerGrille();
+        garnirGrille();
+        //cmbComboBox.getItems().add(contenu);
+        //txtSource.clear();
+        //cmbComboBox.getSelectionModel().selectLast();
+    }
+
+    //***   Gestion du GridPane et génération des tabDA et tabNotes ***//
+    
+    //Supprime puis recrée les colones et lignes du GridPane
     public void creerGrille() {
         gridNotes.getRowConstraints().clear();
         gridNotes.getColumnConstraints().clear();
@@ -210,6 +267,7 @@ public class FXMLDocumentController implements Initializable {
         }
     }
 
+    //Vide le texte de tout les éléments Text du GridPane
     public void viderGrille() {
         for (Node noeud : gridNotes.getChildren()) {
             if (noeud instanceof Text) {
@@ -217,31 +275,40 @@ public class FXMLDocumentController implements Initializable {
             }
         }
     }
-
+    
+    //Ajoute les Titres de colones, les DA et les notes dans le GridPane
     public void garnirGrille() {
+        //Ajoute les Titres de colonnes
         int iCol = 0;
         for (Titre titre : Titre.values()) {
             gridNotes.add(new Text(titre + ""), iCol, 0);
             iCol++;
         }
+        
+        //Ajoute les DA
         int iLig = 1;
         for (int i = 0; i < nbEleves; i++) {
-            gridNotes.add(new Text(index[i] + ""), 0, iLig);
+            gridNotes.add(new Text(tabDA[index[i]] + ""), 0, iLig);
             iLig++;
         }
+        //Ajoute les notes
         for (int i = 0; i < nbEleves; i++) {
             for (int j = 0; j < tabNotes[i].length; j++) {
-                gridNotes.add(new Text(tabNotes[i][j] + ""), j + 1, i + 1);
+                gridNotes.add(new Text(tabNotes[index[i]][j] + ""), j + 1, i + 1);
             }
         }
     }
 
+    //Rempli le listview avec les DA d'élèves
     public void garnirLsv() {
         for (int i = 0; i < nbEleves; i++) {
-            lsvDA.getItems().add(index[i]);
+            lsvDA.getItems().add(tabDA[i]);
         }
     }
 
+    //Boucle sur notes.txt (racine du projet) et lis les entrées, 
+    //garnis l'Array de DA tabDA et les notes dans tabNotes. 
+    //il met aussi à jour la variable nbEleves
     public void createClass() throws FileNotFoundException, IOException {
         BufferedReader objEntree = new BufferedReader(new FileReader("notes.txt"));
         String ligneLue = objEntree.readLine();
@@ -249,7 +316,7 @@ public class FXMLDocumentController implements Initializable {
         while (ligneLue != null) {
             int j = 0;
             StringTokenizer tok = new StringTokenizer(ligneLue, " ");
-            index[i] = Integer.parseInt(tok.nextToken());
+            tabDA[i] = Integer.parseInt(tok.nextToken());
             while (tok.countTokens() != 0) {
                 int valeur = Integer.parseInt(tok.nextToken());
                 tabNotes[i][j] = valeur;
@@ -260,5 +327,18 @@ public class FXMLDocumentController implements Initializable {
         }
         nbEleves = i;
         objEntree.close();
+    }
+    
+    //Active ou désactive les TextFields et Buttons pour l'ajout ou la modification d'entrées
+    public void enableDataCtrls(boolean toggle) {
+        Object[] objects = new Object[]{txfDA, txfExam1, txfExam2, txfTP1, txfTP2, btnAnnuler, btnOK};
+        for (Object obj : objects) {
+            if (obj instanceof TextField) {
+                ((TextField) obj).setDisable(!toggle);
+                ((TextField) obj).setText("");
+            } else if (obj instanceof Button) {
+                ((Button) obj).setDisable(!toggle);
+            }
+        }
     }
 }

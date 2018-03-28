@@ -10,11 +10,11 @@ public class Utilitaires {
             tab[ligne][i] = 0;                  //Delete Notes
         }
 
-        //Réorganise le tableau une ligne plus haut
+        /*//Réorganise le tableau une ligne plus haut
         for (int i = ligne; i < tab.length - 1; i++) {
             permuterIntID(tabID, i, 1 + i);  //Sort DA
             permuterInt(tab, i, 1 + i);       //Sort Notes
-        }
+        }*/
         FXMLDocumentController.nbEleves--;
     }
 
@@ -45,27 +45,76 @@ public class Utilitaires {
         tab[ind2] = transit;
     }
 
-    //TriSSS non fonctionel
-    public int[] triSSSIndirection(int[] IDs, int[][] tabData, int iLigne) {
+    
+    public void triAscNotes(int[] index, int[][] tab, int colone){     
         int iMin;
-        try {
-            int[] tabId = new int[tabData.length];
-            for (int i = 0; i < IDs.length; i++) {
-                tabId[i] = IDs[i];
-            }
-            for (int i = 0; i < tabData.length - 1; i++) {
-                iMin = i;
-                for (int j = i + 1; j < tabData.length; j++) {
-                    if (tabId[iMin] > tabId[j]) {
-                        iMin = j;
-                    }
+        //initialiser tableau tabDA     
+        for (int i = 0; i < index.length; i++) {
+            index[i] = i;
+        }
+        
+        for (int i = 0; i < tab.length - 1; i++) {
+            iMin = i;
+            for (int j = i + 1; j < tab.length; j++) {
+                if (tab[index[iMin]][colone] > tab[index[j]][colone]) {
+                    iMin = j;
                 }
-                permuterIntID(tabId, iMin, i);
             }
-            return tabId;
-        } catch (Exception ex) {
-            System.out.println("error");
-            return new int[1];
+            permuterIntID(index, iMin, i);
+        }
+    }
+    
+    public void triDscNotes(int[] index, int[][] tab, int colone){     
+        int iMin;
+        //initialiser tableau tabDA     
+        for (int i = 0; i < index.length; i++) {
+            index[i] = i;
+        }
+        
+        for (int i = 0; i < tab.length - 1; i++) {
+            iMin = i;
+            for (int j = i + 1; j < tab.length; j++) {
+                if (tab[index[iMin]][colone] < tab[index[j]][colone]) {
+                    iMin = j;
+                }
+            }
+            permuterIntID(index, iMin, i);
+        }
+    }
+    
+    public void triAscDA(int[] index, int[] tab){     
+        int iMin;
+        //initialiser tableau tabDA     
+        for (int i = 0; i < index.length; i++) {
+            index[i] = i;
+        }
+        
+        for (int i = 0; i < tab.length - 1; i++) {
+            iMin = i;
+            for (int j = i + 1; j < tab.length; j++) {
+                if (tab[index[iMin]] > tab[index[j]]) {
+                    iMin = j;
+                }
+            }
+            permuterIntID(index, iMin, i);
+        }
+    }
+    
+    public void triDscDA(int[] index, int[] tab){     
+        int iMin;
+        //initialiser tableau tabDA     
+        for (int i = 0; i < index.length; i++) {
+            index[i] = i;
+        }
+        
+        for (int i = 0; i < tab.length - 1; i++) {
+            iMin = i;
+            for (int j = i + 1; j < tab.length; j++) {
+                if (tab[index[iMin]] < tab[index[j]]) {
+                    iMin = j;
+                }
+            }
+            permuterIntID(index, iMin, i);
         }
     }
 
