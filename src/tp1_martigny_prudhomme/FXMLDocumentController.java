@@ -1,5 +1,6 @@
 package tp1_martigny_prudhomme;
 
+import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.net.URL;
@@ -28,6 +29,7 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 
 public class FXMLDocumentController implements Initializable {
@@ -45,7 +47,6 @@ public class FXMLDocumentController implements Initializable {
 
     public static int nbEleves = 0; //Compteur du nombre d'élèves
     private static int[][] tabNotes = new int[NB_ELEVES][NB_EVALS + 2]; //
-    //private static int[] tabDA = new int[NB_ELEVES];
     private static int[] index = new int[NB_ELEVES];
     
     enum Titre {
@@ -81,7 +82,6 @@ public class FXMLDocumentController implements Initializable {
     private Label lblMinTP1;
     @FXML
     private Label lblMinTP2;
-
     @FXML
     private GridPane gridNotes;
     @FXML
@@ -183,7 +183,7 @@ public class FXMLDocumentController implements Initializable {
                 notes[EXA2] = Integer.parseInt(txfExam2.getText());
                 notes[TP1] = Integer.parseInt(txfTP1.getText());
                 notes[TP2] = Integer.parseInt(txfTP2.getText());
-                notes[TOTAL] = util.calculerTotal(notes[EXA1], notes[EXA2], notes[TP1], notes[TP2]);
+                notes[TOTAL] = calculerTotal(notes);
                 boolean notesValides = true;
                 for (int i = 1; i < notes.length; i++) {
                     if (!(notes[i] <= 100 && notes[i] >= 0)) {
@@ -208,7 +208,7 @@ public class FXMLDocumentController implements Initializable {
                 note[1] = Integer.parseInt(txfExam2.getText());
                 note[2] = Integer.parseInt(txfTP1.getText());
                 note[3] = Integer.parseInt(txfTP2.getText());
-                note[4] = util.calculerTotal(note[0], note[1], note[2], note[3]);
+                note[4] = calculerTotal(note);
                 util.modifier(tabNotes, note, lsvDA.getSelectionModel().getSelectedIndex());
                 actualiserGrid();
                 enableDataCtrls(false);
@@ -242,7 +242,7 @@ public class FXMLDocumentController implements Initializable {
     private void onDragDetectedLsv(MouseEvent event) {
         Dragboard db = lsvDA.startDragAndDrop(TransferMode.ANY);
         ClipboardContent cbContenu = new ClipboardContent();
-        cbContenu.putString(lsvDA.getSelectionModel().getSelectedIndex() + "");
+        cbContenu.putString(String.valueOf(lsvDA.getSelectionModel().getSelectedIndex()));
         db.setContent(cbContenu);
         System.out.println(lsvDA.getSelectionModel().getSelectedIndex());
     }
@@ -296,7 +296,7 @@ public class FXMLDocumentController implements Initializable {
         //Ajoute les Titres de colonnes
         int iCol = 0;
         for (Titre titre : Titre.values()) {
-            gridNotes.add(new Text(titre + ""), iCol, 0);
+            gridNotes.add(new Text(String.valueOf(titre)), iCol, 0);
             iCol++;
         }
 
@@ -306,7 +306,17 @@ public class FXMLDocumentController implements Initializable {
         //Ajoute les notes
         for (int i = 0; i < nbEleves; i++) {
             for (int j = 0; j < tabNotes[i].length; j++) {
-                gridNotes.add(new Text(tabNotes[index[i]][j] + ""), j, i + 1);
+                Text texte = new Text(String.valueOf(tabNotes[index[i]][j]));
+                if(j==0){
+                    texte.setFill(Paint.valueOf("#fff"));
+                }
+                if((tabNotes[i][TOTAL] < 60 && j == TOTAL && i >= 1)||(tabNotes[i][TOTAL] < 60 && j == DA && i >= 1)){
+                    texte.setFill(Paint.valueOf("#d60000"));
+                }
+                else if(j >= 1){
+                    texte.setFill(Paint.valueOf("#efd67a"));
+                }
+                gridNotes.add(texte, j, i + 1);
             }
         }
     }
@@ -392,17 +402,21 @@ public class FXMLDocumentController implements Initializable {
     
     public void remplirStatistiques() {
         lblNbEleves.setText("Nombre d'élèves: " + String.valueOf(nbEleves));
-        lblMoyEx1.setText(String.valueOf(util.moyenneEval(tabNotes, 1)));
-        lblMoyEx2.setText(String.valueOf(util.moyenneEval(tabNotes, 2)));
-        lblMoyTP1.setText(String.valueOf(util.moyenneEval(tabNotes, 3)));
-        lblMoyTP2.setText(String.valueOf(util.moyenneEval(tabNotes, 4)));
-        lblMaxEx1.setText(String.valueOf(util.maxEval(tabNotes, 1)));
-        lblMaxEx2.setText(String.valueOf(util.maxEval(tabNotes, 2)));
-        lblMaxTP1.setText(String.valueOf(util.maxEval(tabNotes, 3)));
-        lblMaxTP2.setText(String.valueOf(util.maxEval(tabNotes, 4)));
-        lblMinEx1.setText(String.valueOf(util.minEval(tabNotes, 1)));
-        lblMinEx2.setText(String.valueOf(util.minEval(tabNotes, 2)));
-        lblMinTP1.setText(String.valueOf(util.minEval(tabNotes, 3)));
-        lblMinTP2.setText(String.valueOf(util.minEval(tabNotes, 4)));
+        lblMoyEx1.setText(String.valueOf(util.moyenneEval(tabNotes, EXA1)));
+        lblMoyEx2.setText(String.valueOf(util.moyenneEval(tabNotes, EXA2)));
+        lblMoyTP1.setText(String.valueOf(util.moyenneEval(tabNotes, TP1)));
+        lblMoyTP2.setText(String.valueOf(util.moyenneEval(tabNotes, TP2)));
+        lblMaxEx1.setText(String.valueOf(util.maxEval(tabNotes, EXA1)));
+        lblMaxEx2.setText(String.valueOf(util.maxEval(tabNotes, EXA2)));
+        lblMaxTP1.setText(String.valueOf(util.maxEval(tabNotes, TP1)));
+        lblMaxTP2.setText(String.valueOf(util.maxEval(tabNotes, TP2)));
+        lblMinEx1.setText(String.valueOf(util.minEval(tabNotes, EXA1)));
+        lblMinEx2.setText(String.valueOf(util.minEval(tabNotes, EXA2)));
+        lblMinTP1.setText(String.valueOf(util.minEval(tabNotes, TP1)));
+        lblMinTP2.setText(String.valueOf(util.minEval(tabNotes, TP2)));
+    }
+    
+    public double calculerTotal(double[] note) {
+        return (note[EXA1] * 25 / 100) + (note[EXA2] * 30 / 100) + (note[TP1] * 20 / 100) + (note[TP2] * 25 / 100);
     }
 }

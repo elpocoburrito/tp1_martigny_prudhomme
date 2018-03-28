@@ -68,7 +68,6 @@ public class Utilitaires {
         for (int i = 0; i < index.length; i++) {
             index[i] = i;
         }
-
         for (int i = 0; i < tab.length - 1; i++) {
             iMin = i;
             for (int j = i + 1; j < tab.length; j++) {
@@ -148,9 +147,4 @@ public class Utilitaires {
         }
         return max;
     }
-
-    public double calculerTotal(double note1, double note2, double note3, double note4) {
-        return (note1 * 25 / 100) + (note2 * 30 / 100) + (note3 * 20 / 100) + (note4 * 25 / 100);
-    }
-
 }
