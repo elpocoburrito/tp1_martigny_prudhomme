@@ -113,7 +113,6 @@ public class FXMLDocumentController implements Initializable {
                 indexASupp = i;
             }
         }
-
         util.supprimer(tabDA, tabNotes, indexASupp);
         actualiserGrid();
     }
@@ -166,8 +165,7 @@ public class FXMLDocumentController implements Initializable {
                     util.ajouter(tabDA, tabNotes, notes);
                     actualiserGrid();
                     enableDataCtrls(false);
-                }
-                else {
+                } else {
                     Alert alert = new Alert(AlertType.ERROR);
                     alert.setTitle("Erreur!");
                     alert.setContentText("Entrez des notes entre 0 et 100!");

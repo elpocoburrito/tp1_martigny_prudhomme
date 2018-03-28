@@ -120,7 +120,10 @@ public class Utilitaires {
             permuterIntID(index, iMin, i);
         }
     }
-
+    public boolean examValide(double tab[]){
+        
+    }
+    
     public double calculerTotal(double note1, double note2, double note3, double note4) {
         return (note1 * 25 / 100) + (note2 * 30 / 100) + (note3 * 20 / 100) + (note4 * 25 / 100);
     }
