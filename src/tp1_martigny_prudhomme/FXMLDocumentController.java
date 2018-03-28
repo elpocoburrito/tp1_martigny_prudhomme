@@ -13,8 +13,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import java.io.FileReader;
 import java.io.IOException;
-import static java.lang.Integer.parseInt;
-import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,13 +28,13 @@ import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.text.Text;
-import tp1_martigny_prudhomme.Utilitaires.*;
 
 public class FXMLDocumentController implements Initializable {
 
     private static final int NB_ELEVES = 25;
     private static final int NB_EVALS = 4;
 
+    //Positions statiques des éléments dans le GridPane
     private static final int DA = 0;
     private static final int EXA1 = 1;
     private static final int EXA2 = 2;
@@ -45,10 +43,14 @@ public class FXMLDocumentController implements Initializable {
     private static final int TOTAL = 5;
 
     public static int nbEleves = 0; //Compteur du nombre d'élèves
-    private static int[][] tabNotes = new int[NB_ELEVES][NB_EVALS + 1];
+    private static int[][] tabNotes = new int[NB_ELEVES][NB_EVALS + 1]; //
     private static int[] tabDA = new int[NB_ELEVES];
     private static int[] index = new int[NB_ELEVES];
-
+    
+    enum Titre {
+        DA, Examen1, Examen2, TP1, TP2, Total
+    };
+    
     public String modeToggle = "default";
     private Utilitaires util = new Utilitaires();
 
@@ -73,10 +75,6 @@ public class FXMLDocumentController implements Initializable {
     @FXML
     private Button btnAnnuler;
 
-    enum Titre {
-        DA, Examen1, Examen2, TP1, TP2, Total
-    };
-
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         cmbTris.getItems().addAll("Tri Ascendant DA", "Tri Descendant DA", "Tri Ascandant Note Finale", "Tri Descendant Note Finale");
@@ -100,7 +98,6 @@ public class FXMLDocumentController implements Initializable {
 
     @FXML
     private void btnSupprimerClick(ActionEvent event) {
-        modeToggle = "supprimer";
         int indexASupp = 0;
         String DA = lsvDA.getSelectionModel().getSelectedItem().toString();
         lsvDA.getItems().remove(lsvDA.getSelectionModel().getSelectedIndex());
@@ -114,9 +111,7 @@ public class FXMLDocumentController implements Initializable {
         }
 
         util.supprimer(tabDA, tabNotes, indexASupp);
-        viderGrille();
-        creerGrille();
-        garnirGrille();
+        actualiserGrid();
     }
 
     @FXML
@@ -159,14 +154,8 @@ public class FXMLDocumentController implements Initializable {
                 notes[TP2] = Integer.parseInt(txfTP2.getText());
                 notes[TOTAL] = util.calculerTotal(notes[EXA1],notes[EXA2],notes[TP1],notes[TP2]);
                 util.ajouter(tabDA, tabNotes, notes);
-                viderGrille();
-                creerGrille();
-                garnirGrille();
+                actualiserGrid();
                 enableDataCtrls(false);
-                break;
-
-            case "supprimer":
-
                 break;
 
             case "modifier":
@@ -177,9 +166,7 @@ public class FXMLDocumentController implements Initializable {
                 note[3] = Integer.parseInt(txfTP2.getText());
                 note[4] = util.calculerTotal(note[0],note[1],note[2],note[3]);
                 util.modifier(tabNotes, note, lsvDA.getSelectionModel().getSelectedIndex());
-                viderGrille();
-                creerGrille();
-                garnirGrille();
+                actualiserGrid();
                 enableDataCtrls(false);
                 break;
 
@@ -209,10 +196,7 @@ public class FXMLDocumentController implements Initializable {
             default:
                 break;
         }
-        viderGrille();
-        creerGrille();
-        garnirGrille();
-        
+        actualiserGrid();
     }
     
     //***   Gestion du DnD sur la poubelle ***//
@@ -239,13 +223,7 @@ public class FXMLDocumentController implements Initializable {
         System.out.println(contenu);
         util.supprimer(tabDA, tabNotes, Integer.parseInt(contenu));
         lsvDA.getItems().remove(Integer.parseInt(contenu));
-        
-        viderGrille();
-        creerGrille();
-        garnirGrille();
-        //cmbComboBox.getItems().add(contenu);
-        //txtSource.clear();
-        //cmbComboBox.getSelectionModel().selectLast();
+        actualiserGrid();
     }
 
     //***   Gestion du GridPane et génération des tabDA et tabNotes ***//
@@ -327,6 +305,13 @@ public class FXMLDocumentController implements Initializable {
         }
         nbEleves = i;
         objEntree.close();
+    }
+    
+    //Actualise l'affichage du GridPane
+    public void actualiserGrid(){
+        viderGrille();
+        creerGrille();
+        garnirGrille();
     }
     
     //Active ou désactive les TextFields et Buttons pour l'ajout ou la modification d'entrées
