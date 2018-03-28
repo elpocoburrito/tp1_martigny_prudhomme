@@ -1,5 +1,7 @@
 package tp1_martigny_prudhomme;
 
+import java.util.Arrays;
+
 public class Utilitaires {
 
     public void supprimer(int[] tabID, int[][] tab, int ligne) {
@@ -10,16 +12,17 @@ public class Utilitaires {
             tab[ligne][i] = 0;                  //Delete Notes
         }
 
-        /*//Réorganise le tableau une ligne plus haut
+        //Réorganise le tableau une ligne plus haut
         for (int i = ligne; i < tab.length - 1; i++) {
             permuterIntID(tabID, i, 1 + i);  //Sort DA
             permuterInt(tab, i, 1 + i);       //Sort Notes
-        }*/
+        }
         FXMLDocumentController.nbEleves--;
     }
 
     public void ajouter(int[] tabID, int[][] tab, double[] notes) {
         int ligne = FXMLDocumentController.nbEleves;
+        Arrays.toString(notes);
         tabID[ligne] = (int) notes[0];
         for (int i = 1; i < notes.length; i++) {
             tab[ligne][i - 1] = (int) notes[i];
@@ -46,16 +49,16 @@ public class Utilitaires {
     }
 
     
-    public void triAscNotes(int[] index, int[][] tab, int colone){     
+    public void triAscNotes(int[] index, int[][] tab, int colone, int nbEleves){     
         int iMin;
         //initialiser tableau tabDA     
         for (int i = 0; i < index.length; i++) {
             index[i] = i;
         }
         
-        for (int i = 0; i < tab.length - 1; i++) {
+        for (int i = 0; i < nbEleves - 1; i++) {
             iMin = i;
-            for (int j = i + 1; j < tab.length; j++) {
+            for (int j = i + 1; j < nbEleves; j++) {
                 if (tab[index[iMin]][colone] > tab[index[j]][colone]) {
                     iMin = j;
                 }
@@ -64,7 +67,7 @@ public class Utilitaires {
         }
     }
     
-    public void triDscNotes(int[] index, int[][] tab, int colone){     
+    public void triDscNotes(int[] index, int[][] tab, int colone, int nbEleves){     
         int iMin;
         //initialiser tableau tabDA     
         for (int i = 0; i < index.length; i++) {
@@ -82,16 +85,16 @@ public class Utilitaires {
         }
     }
     
-    public void triAscDA(int[] index, int[] tab){     
+    public void triAscDA(int[] index, int[] tab, int nbEleves){     
         int iMin;
         //initialiser tableau tabDA     
         for (int i = 0; i < index.length; i++) {
             index[i] = i;
         }
         
-        for (int i = 0; i < tab.length - 1; i++) {
+        for (int i = 0; i < nbEleves - 1; i++) {
             iMin = i;
-            for (int j = i + 1; j < tab.length; j++) {
+            for (int j = i + 1; j < nbEleves; j++) {
                 if (tab[index[iMin]] > tab[index[j]]) {
                     iMin = j;
                 }
@@ -100,16 +103,16 @@ public class Utilitaires {
         }
     }
     
-    public void triDscDA(int[] index, int[] tab){     
+    public void triDscDA(int[] index, int[] tab, int nbEleves){     
         int iMin;
         //initialiser tableau tabDA     
         for (int i = 0; i < index.length; i++) {
             index[i] = i;
         }
         
-        for (int i = 0; i < tab.length - 1; i++) {
+        for (int i = 0; i < nbEleves - 1; i++) {
             iMin = i;
-            for (int j = i + 1; j < tab.length; j++) {
+            for (int j = i + 1; j < nbEleves; j++) {
                 if (tab[index[iMin]] < tab[index[j]]) {
                     iMin = j;
                 }

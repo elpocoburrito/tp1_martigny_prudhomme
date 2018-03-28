@@ -46,11 +46,11 @@ public class FXMLDocumentController implements Initializable {
     private static int[][] tabNotes = new int[NB_ELEVES][NB_EVALS + 1]; //
     private static int[] tabDA = new int[NB_ELEVES];
     private static int[] index = new int[NB_ELEVES];
-    
+
     enum Titre {
         DA, Examen1, Examen2, TP1, TP2, Total
     };
-    
+
     public String modeToggle = "default";
     private Utilitaires util = new Utilitaires();
 
@@ -78,18 +78,22 @@ public class FXMLDocumentController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         cmbTris.getItems().addAll("Tri Ascendant DA", "Tri Descendant DA", "Tri Ascandant Note Finale", "Tri Descendant Note Finale");
+        cmbTris.getSelectionModel().select(0);
+        lsvDA.getSelectionModel().selectedItemProperty().addListener(e -> {
+            actualiserTxf();
+        });
         try {
             createClass();
         } catch (IOException ex) {
             Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        trierGrid();
         garnirLsv();
         creerGrille();
         garnirGrille();
     }
 
     //***   Événements du GUI  ***//
-    
     @FXML
     private void btnAjouterClick(ActionEvent event) {
         modeToggle = "ajouter";
@@ -128,7 +132,6 @@ public class FXMLDocumentController implements Initializable {
             enableDataCtrls(true);
             txfDA.setText(lsvDA.getSelectionModel().getSelectedItem().toString());
             txfDA.setDisable(true);
-
             txfExam1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][0]));
             txfExam2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][1]));
             txfTP1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][2]));
@@ -152,19 +155,33 @@ public class FXMLDocumentController implements Initializable {
                 notes[EXA2] = Integer.parseInt(txfExam2.getText());
                 notes[TP1] = Integer.parseInt(txfTP1.getText());
                 notes[TP2] = Integer.parseInt(txfTP2.getText());
-                notes[TOTAL] = util.calculerTotal(notes[EXA1],notes[EXA2],notes[TP1],notes[TP2]);
-                util.ajouter(tabDA, tabNotes, notes);
-                actualiserGrid();
-                enableDataCtrls(false);
+                notes[TOTAL] = util.calculerTotal(notes[EXA1], notes[EXA2], notes[TP1], notes[TP2]);
+                boolean notesValides = true;
+                for (int i = 1; i < notes.length; i++) {
+                    if (!(notes[i] <= 100 && notes[i] >= 0)) {
+                        notesValides = false;
+                    }
+                }
+                if (notesValides) {
+                    util.ajouter(tabDA, tabNotes, notes);
+                    actualiserGrid();
+                    enableDataCtrls(false);
+                }
+                else {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Erreur!");
+                    alert.setContentText("Entrez des notes entre 0 et 100!");
+                    alert.showAndWait();
+                }
                 break;
 
             case "modifier":
-                double[] note = new double[NB_EVALS+1];
+                double[] note = new double[NB_EVALS + 1];
                 note[0] = Integer.parseInt(txfExam1.getText());
                 note[1] = Integer.parseInt(txfExam2.getText());
                 note[2] = Integer.parseInt(txfTP1.getText());
                 note[3] = Integer.parseInt(txfTP2.getText());
-                note[4] = util.calculerTotal(note[0],note[1],note[2],note[3]);
+                note[4] = util.calculerTotal(note[0], note[1], note[2], note[3]);
                 util.modifier(tabNotes, note, lsvDA.getSelectionModel().getSelectedIndex());
                 actualiserGrid();
                 enableDataCtrls(false);
@@ -175,37 +192,19 @@ public class FXMLDocumentController implements Initializable {
                 break;
         }
     }
-    
+
     @FXML
     private void cmbTriChanged(ActionEvent event) {
-        ComboBox cmb = (ComboBox) event.getSource();
-        int selected = cmb.getSelectionModel().getSelectedIndex();
-        switch(selected){
-            case 0:
-                util.triAscDA(index, tabDA);
-                break;
-            case 1:
-                util.triDscDA(index, tabDA);
-                break;
-            case 2:
-                util.triAscNotes(index, tabNotes, TOTAL-1);
-                break;
-            case 3:
-                util.triDscNotes(index, tabNotes, TOTAL-1);
-                break;
-            default:
-                break;
-        }
+        trierGrid();
         actualiserGrid();
     }
-    
+
     //***   Gestion du DnD sur la poubelle ***//
-    
     @FXML
     private void onDragDetectedLsv(MouseEvent event) {
         Dragboard db = lsvDA.startDragAndDrop(TransferMode.ANY);
         ClipboardContent cbContenu = new ClipboardContent();
-        cbContenu.putString(lsvDA.getSelectionModel().getSelectedIndex()+"");
+        cbContenu.putString(lsvDA.getSelectionModel().getSelectedIndex() + "");
         db.setContent(cbContenu);
         System.out.println(lsvDA.getSelectionModel().getSelectedIndex());
     }
@@ -223,11 +222,11 @@ public class FXMLDocumentController implements Initializable {
         System.out.println(contenu);
         util.supprimer(tabDA, tabNotes, Integer.parseInt(contenu));
         lsvDA.getItems().remove(Integer.parseInt(contenu));
+        trierGrid();
         actualiserGrid();
     }
 
     //***   Gestion du GridPane et génération des tabDA et tabNotes ***//
-    
     //Supprime puis recrée les colones et lignes du GridPane
     public void creerGrille() {
         gridNotes.getRowConstraints().clear();
@@ -253,7 +252,7 @@ public class FXMLDocumentController implements Initializable {
             }
         }
     }
-    
+
     //Ajoute les Titres de colones, les DA et les notes dans le GridPane
     public void garnirGrille() {
         //Ajoute les Titres de colonnes
@@ -262,7 +261,7 @@ public class FXMLDocumentController implements Initializable {
             gridNotes.add(new Text(titre + ""), iCol, 0);
             iCol++;
         }
-        
+
         //Ajoute les DA
         int iLig = 1;
         for (int i = 0; i < nbEleves; i++) {
@@ -281,6 +280,26 @@ public class FXMLDocumentController implements Initializable {
     public void garnirLsv() {
         for (int i = 0; i < nbEleves; i++) {
             lsvDA.getItems().add(tabDA[i]);
+        }
+    }
+
+    public void trierGrid() {
+        int selected = cmbTris.getSelectionModel().getSelectedIndex();
+        switch (selected) {
+            case 0:
+                util.triAscDA(index, tabDA, nbEleves);
+                break;
+            case 1:
+                util.triDscDA(index, tabDA, nbEleves);
+                break;
+            case 2:
+                util.triAscNotes(index, tabNotes, TOTAL - 1, nbEleves);
+                break;
+            case 3:
+                util.triDscNotes(index, tabNotes, TOTAL - 1, nbEleves);
+                break;
+            default:
+                break;
         }
     }
 
@@ -306,14 +325,22 @@ public class FXMLDocumentController implements Initializable {
         nbEleves = i;
         objEntree.close();
     }
-    
+
     //Actualise l'affichage du GridPane
-    public void actualiserGrid(){
+    public void actualiserGrid() {
         viderGrille();
         creerGrille();
         garnirGrille();
     }
-    
+
+    public void actualiserTxf() {
+        txfDA.setText(lsvDA.getSelectionModel().getSelectedItem().toString());
+        txfExam1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][0]));
+        txfExam2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][1]));
+        txfTP1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][2]));
+        txfTP2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][3]));
+    }
+
     //Active ou désactive les TextFields et Buttons pour l'ajout ou la modification d'entrées
     public void enableDataCtrls(boolean toggle) {
         Object[] objects = new Object[]{txfDA, txfExam1, txfExam2, txfTP1, txfTP2, btnAnnuler, btnOK};

@@ -41,8 +41,8 @@
         <Label layoutX="175.0" layoutY="120.0" text="Exam. 2" />
         <Label layoutX="175.0" layoutY="155.0" text="TP1" />
         <Label layoutX="175.0" layoutY="190.0" text="TP2" />
-        <Button fx:id="btnOK" disable="true" layoutX="175.0" layoutY="217.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="25.0" prefWidth="85.0" text="OK" />
-        <Button fx:id="btnAnnuler" disable="true" layoutX="269.0" layoutY="217.0" mnemonicParsing="false" onAction="#btnAnnulerClick" prefHeight="25.0" prefWidth="85.0" text="Annuler" />
+        <Button fx:id="btnOK" disable="true" layoutX="175.0" layoutY="220.0" mnemonicParsing="false" onAction="#btnOkClick" prefHeight="25.0" prefWidth="85.0" text="OK" />
+        <Button fx:id="btnAnnuler" disable="true" layoutX="269.0" layoutY="220.0" mnemonicParsing="false" onAction="#btnAnnulerClick" prefHeight="25.0" prefWidth="85.0" text="Annuler" />
         <Label layoutX="175.0" layoutY="14.0" text="Tris" AnchorPane.topAnchor="14.0" />
         <ComboBox fx:id="cmbTris" layoutX="203.0" layoutY="10.0" onAction="#cmbTriChanged" prefHeight="25.0" prefWidth="205.0" />
       <ImageView fitHeight="136.0" fitWidth="134.0" layoutX="200.0" layoutY="268.0" onDragDropped="#onDragDroppedImg" onDragOver="#onDragOverImg" pickOnBounds="true" preserveRatio="true">
