@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.geometry.HPos;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -120,6 +121,12 @@ public class FXMLDocumentController implements Initializable {
         creerGrille();
         garnirGrille();
         remplirStatistiques();
+        
+        for (int i = 0; i < tabNotes.length; i++) {
+            for (int j = 0; j < tabNotes[0].length; j++) {
+                System.out.println(tabNotes[i][j]);
+            }
+        }
     }
 
     //***   Événements du GUI  ***//
@@ -158,12 +165,12 @@ public class FXMLDocumentController implements Initializable {
             alert.showAndWait();
         } else {
             enableDataCtrls(true);
-            txfDA.setText(lsvDA.getSelectionModel().getSelectedItem().toString());
+            txfDA.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][DA]));
             txfDA.setDisable(true);
-            txfExam1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][0]));
-            txfExam2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][1]));
-            txfTP1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][2]));
-            txfTP2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][3]));
+            txfExam1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][EXA1]));
+            txfExam2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][EXA2]));
+            txfTP1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][TP1]));
+            txfTP2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][TP2]));
         }
     }
 
@@ -270,6 +277,7 @@ public class FXMLDocumentController implements Initializable {
         gridNotes.getRowConstraints().clear();
         gridNotes.getColumnConstraints().clear();
         gridNotes.getRowConstraints().add(new RowConstraints(30));
+        GridPane.setHalignment(gridNotes, HPos.CENTER);
         for (int i = 1; i < nbEleves; i++) {
             RowConstraints eleve = new RowConstraints();
             eleve.setPrefHeight(20);
@@ -296,7 +304,9 @@ public class FXMLDocumentController implements Initializable {
         //Ajoute les Titres de colonnes
         int iCol = 0;
         for (Titre titre : Titre.values()) {
-            gridNotes.add(new Text(String.valueOf(titre)), iCol, 0);
+            Text text = new Text(String.valueOf(titre));
+            gridNotes.add(text, iCol, 0);
+            GridPane.setHalignment(text, HPos.CENTER);
             iCol++;
         }
 
@@ -317,6 +327,7 @@ public class FXMLDocumentController implements Initializable {
                     texte.setFill(Paint.valueOf("#efd67a"));
                 }
                 gridNotes.add(texte, j, i + 1);
+                GridPane.setHalignment(texte, HPos.CENTER);
             }
         }
     }
@@ -380,11 +391,11 @@ public class FXMLDocumentController implements Initializable {
     }
 
     public void actualiserTxf() {
-        txfDA.setText(lsvDA.getSelectionModel().getSelectedItem().toString());
-        txfExam1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][0]));
-        txfExam2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][1]));
-        txfTP1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][2]));
-        txfTP2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][3]));
+        txfDA.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][DA]));
+        txfExam1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][EXA1]));
+        txfExam2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][EXA2]));
+        txfTP1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][TP1]));
+        txfTP2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][TP2]));
     }
 
     //Active ou désactive les TextFields et Buttons pour l'ajout ou la modification d'entrées
@@ -402,10 +413,10 @@ public class FXMLDocumentController implements Initializable {
     
     public void remplirStatistiques() {
         lblNbEleves.setText("Nombre d'élèves: " + String.valueOf(nbEleves));
-        lblMoyEx1.setText(String.valueOf(util.moyenneEval(tabNotes, EXA1)));
-        lblMoyEx2.setText(String.valueOf(util.moyenneEval(tabNotes, EXA2)));
-        lblMoyTP1.setText(String.valueOf(util.moyenneEval(tabNotes, TP1)));
-        lblMoyTP2.setText(String.valueOf(util.moyenneEval(tabNotes, TP2)));
+        lblMoyEx1.setText(util.moyenneEval(tabNotes, EXA1));
+        lblMoyEx2.setText(util.moyenneEval(tabNotes, EXA2));
+        lblMoyTP1.setText(util.moyenneEval(tabNotes, TP1));
+        lblMoyTP2.setText(util.moyenneEval(tabNotes, TP2));
         lblMaxEx1.setText(String.valueOf(util.maxEval(tabNotes, EXA1)));
         lblMaxEx2.setText(String.valueOf(util.maxEval(tabNotes, EXA2)));
         lblMaxTP1.setText(String.valueOf(util.maxEval(tabNotes, TP1)));

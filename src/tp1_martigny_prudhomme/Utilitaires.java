@@ -1,5 +1,6 @@
 package tp1_martigny_prudhomme;
 
+import java.text.DecimalFormat;
 import java.util.Arrays;
 
 public class Utilitaires {
@@ -115,16 +116,18 @@ public class Utilitaires {
         }
     }
 
-    public double moyenneEval(int[][] tab, int col) {
+    public String moyenneEval(int[][] tab, int col) {
         double temp = 0;
         double total = 0;
+        
+        DecimalFormat format = new DecimalFormat("##.00");
 
         for (int i = 0; i < FXMLDocumentController.nbEleves; i++) {
             total += tab[i][col];
             temp++;
         }
 
-        return total / temp;
+        return format.format(total/temp);
     }
 
     public int minEval(int[][] tab, int col) {
