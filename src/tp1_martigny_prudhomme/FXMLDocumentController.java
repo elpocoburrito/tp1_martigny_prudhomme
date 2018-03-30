@@ -128,12 +128,6 @@ public class FXMLDocumentController implements Initializable {
             sauverClass();
         } catch (IOException ex) {
             Logger.getLogger(FXMLDocumentController.class.getName()).log(Level.SEVERE, null, ex);
-
-            for (int i = 0; i < tabNotes.length; i++) {
-                for (int j = 0; j < tabNotes[0].length; j++) {
-                    System.out.println(tabNotes[i][j]);
-                }
-            }
         }
     }
 
