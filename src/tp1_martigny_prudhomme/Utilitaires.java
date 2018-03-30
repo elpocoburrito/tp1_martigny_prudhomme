@@ -30,8 +30,8 @@ public class Utilitaires {
     }
 
     public void modifier(int[][] tab, double[] note, int ind) {
-        for (int i = 0; i < 5; i++) {
-            tab[ind][i] = (int) note[i];
+        for (int i = 1; i < tab[ind].length; i++) {
+            tab[ind][i] = (int) note[i-1];
         }
     }
 
