@@ -17,6 +17,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.FileWriter;
+import java.util.Optional;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,6 +26,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -36,6 +38,11 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 
+/**
+ * 
+ * @author Tommy Prud'homme
+ * et Alexandre Martigny
+ */
 public class FXMLDocumentController implements Initializable {
 
     private static final int NB_ELEVES = 25;
@@ -50,7 +57,7 @@ public class FXMLDocumentController implements Initializable {
     private static final int TOTAL = 5;
 
     public static int nbEleves = 0; //Compteur du nombre d'élèves
-    private static int[][] tabNotes = new int[NB_ELEVES][NB_EVALS + 2]; //
+    private static int[][] tabNotes = new int[NB_ELEVES][NB_EVALS + 2]; //Tableay de notes et de DA
     private static int[] index = new int[NB_ELEVES];
 
     enum Titre {
@@ -132,12 +139,21 @@ public class FXMLDocumentController implements Initializable {
     }
 
     //***   Événements du GUI  ***//
+    
+    /**
+     * Prépare les éléments graphiques pour ajouter des données
+     * @param event 
+     */
     @FXML
     private void btnAjouterClick(ActionEvent event) {
         modeToggle = "ajouter";
         enableDataCtrls(true);
     }
 
+    /**
+     * Supprime l'élément selectionné.
+     * @param event 
+     */
     @FXML
     private void btnSupprimerClick(ActionEvent event) {
         int indexASupp = 0;
@@ -154,7 +170,11 @@ public class FXMLDocumentController implements Initializable {
         nbEleves = util.supprimer(tabNotes, indexASupp, nbEleves);
         actualiserGrid();
     }
-
+    
+    /**
+     * Remplis et déverouille les éléments graphique nécéssaires à la modification
+     * @param event 
+     */
     @FXML
     private void btnModifierClick(ActionEvent event) {
         int indexASupp = 0;
@@ -175,13 +195,21 @@ public class FXMLDocumentController implements Initializable {
             txfTP2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][TP2]));
         }
     }
-
+    
+    /**
+     * Annule la modification/l'ajout
+     * @param event 
+     */
     @FXML
     private void btnAnnulerClick(ActionEvent event) {
         modeToggle = "default";
         enableDataCtrls(false);
     }
 
+    /**
+     * Confirme la modification ou l'ajout lors du clic du bouton OK
+     * @param event 
+     */
     @FXML
     private void btnOkClick(ActionEvent event) {
         switch (modeToggle) {
@@ -228,20 +256,50 @@ public class FXMLDocumentController implements Initializable {
                 break;
         }
     }
-
+    
+    /**
+     * Confirme la sauvegarde puis quitte
+     * @param event
+     * @throws IOException 
+     */
+    @FXML
+    private void btnQuitter(ActionEvent event) throws IOException {
+        Alert alert = new Alert(AlertType.CONFIRMATION);
+        alert.setTitle("Voulez");
+        alert.setContentText("Voulez vous enregistrer?");
+        alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+        Optional<ButtonType> result = alert.showAndWait();
+            if(result.get() == ButtonType.YES){
+                sauverClass();
+                System.exit(0);
+            }
+            else if(result.get() == ButtonType.NO){
+                System.exit(0);
+            }
+    }
+    
+    /**
+     * changement du tri dans le combobox
+     * @param event 
+     */
     @FXML
     private void cmbTriChanged(ActionEvent event) {
         trierGrid();
         actualiserGrid();
     }
 
+    /**
+     * Met à jour les TextFields lors du clic sur un élément du listview
+     * @param event 
+     */
     @FXML
     private void lsvDAClick(MouseEvent event) {
-        Alert alert = new Alert(AlertType.ERROR);
-        alert.setTitle("Erreur!");
-        alert.setContentText("Veuillez effectuer une sélection dans la liste de DA si-haut.");
 
         if (lsvDA.getSelectionModel().isEmpty() == true) {
+            Alert alert = new Alert(AlertType.ERROR);
+            alert.setTitle("Erreur!");
+            alert.setContentText("Veuillez effectuer une sélection dans la liste de DA si-haut.");
+
             alert.showAndWait();
         }
     }
@@ -274,6 +332,7 @@ public class FXMLDocumentController implements Initializable {
     }
 
     //***   Gestion du GridPane et génération des tabDA et tabNotes ***//
+    
     //Supprime puis recrée les colones et lignes du GridPane
     public void creerGrille() {
         gridNotes.getRowConstraints().clear();
@@ -322,7 +381,7 @@ public class FXMLDocumentController implements Initializable {
                 if (j == 0) {
                     texte.setFill(Paint.valueOf("#fff"));
                 }
-                if ((tabNotes[index[i]][TOTAL] < 60 && j == TOTAL && i >= 1) || (tabNotes[index[i]][TOTAL] < 60 && j == DA && i >= 1)) {
+                if ((tabNotes[index[i]][TOTAL] < 60 && j == TOTAL && i >= 0) || (tabNotes[index[i]][TOTAL] < 60 && j == DA && i >= 0)) {
                     texte.setFill(Paint.valueOf("#d60000"));
                 } else if (j >= 1) {
                     texte.setFill(Paint.valueOf("#efd67a"));
@@ -340,6 +399,7 @@ public class FXMLDocumentController implements Initializable {
         }
     }
 
+    //Lance le tri selectionné dans le ComboBox
     public void trierGrid() {
         int selected = cmbTris.getSelectionModel().getSelectedIndex();
         switch (selected) {
@@ -367,10 +427,10 @@ public class FXMLDocumentController implements Initializable {
         BufferedReader objEntree = new BufferedReader(new FileReader("notes.txt"));
         String ligneLue = objEntree.readLine();
         int i = 0;
+        // boucle tant qu'il y a des entrées à lire
         while (ligneLue != null) {
             int j = 0;
             StringTokenizer tok = new StringTokenizer(ligneLue, " ");
-            //tabDA[i] = Integer.parseInt(tok.nextToken());
             while (tok.countTokens() != 0) {
                 int valeur = Integer.parseInt(tok.nextToken());
                 tabNotes[i][j] = valeur;
@@ -383,6 +443,11 @@ public class FXMLDocumentController implements Initializable {
         objEntree.close();
     }
 
+    /**
+     * Sauve les changements dans notes.txt
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
     public void sauverClass() throws FileNotFoundException, IOException {
         FileWriter fw = new FileWriter("notes.txt");
         PrintWriter fp = new PrintWriter(fw);
@@ -403,6 +468,7 @@ public class FXMLDocumentController implements Initializable {
         remplirStatistiques();
     }
 
+    //Actualise l'affichage dans les TextFields
     public void actualiserTxf() {
         txfDA.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][DA]));
         txfExam1.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][EXA1]));
@@ -424,6 +490,7 @@ public class FXMLDocumentController implements Initializable {
         }
     }
 
+    //Rempli les statistiques en bas du gridpane
     public void remplirStatistiques() {
         lblNbEleves.setText("Nombre d'élèves: " + String.valueOf(nbEleves));
         lblMoyEx1.setText(util.moyenneEval(tabNotes, EXA1));
@@ -439,7 +506,8 @@ public class FXMLDocumentController implements Initializable {
         lblMinTP1.setText(String.valueOf(util.minEval(tabNotes, TP1)));
         lblMinTP2.setText(String.valueOf(util.minEval(tabNotes, TP2)));
     }
-
+    
+    //Calcule le total des notes des élèves
     public double calculerTotal(double[] note) {
         return (note[EXA1] * 25 / 100) + (note[EXA2] * 30 / 100) + (note[TP1] * 20 / 100) + (note[TP2] * 25 / 100);
     }
