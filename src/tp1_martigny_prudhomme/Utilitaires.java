@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 public class Utilitaires {
 
-    public void supprimer(int[][] tab, int ligne) {
+    public int supprimer(int[][] tab, int ligne, int nbEleves) {
         //Supprime une ligne de notes
         for (int i = 0; i < tab[ligne].length; i++) {
             tab[ligne][i] = 0;                  //Delete Notes
@@ -15,16 +15,18 @@ public class Utilitaires {
         for (int i = ligne; i < tab.length - 1; i++) {
             permuterInt(tab, i, 1 + i);       //Sort Notes
         }
-        FXMLDocumentController.nbEleves--;
+        nbEleves--;
+        return nbEleves;
     }
 
-    public void ajouter(int[][] tab, double[] notes) {
+    public int ajouter(int[][] tab, double[] notes, int nbEleves) {
         int ligne = FXMLDocumentController.nbEleves;
         Arrays.toString(notes);
         for (int i = 0; i < notes.length; i++) {
             tab[ligne][i] = (int) notes[i];
         }
-        FXMLDocumentController.nbEleves++;
+        nbEleves++;
+        return nbEleves;
     }
 
     public void modifier(int[][] tab, double[] note, int ind) {
