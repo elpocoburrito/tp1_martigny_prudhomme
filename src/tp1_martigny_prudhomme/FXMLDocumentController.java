@@ -1,3 +1,13 @@
+/**
+ * Auteurs: Tommy Prudhomme & Alexandre Martigny
+ * Date de remise: 30 Mars 2018
+ * 
+ * Objectif: Ce programme a pour objectif de gerer des notes d'étudiants. On doit pouvoir
+ * ajouter, supprimer ainsi que modifier des entrées. On doit aussi etre capable de sauvegarder les
+ * changements apportés a un fichier externe. Une section "Statistiques" s'actualise automatiquement
+ * a chaque changement apporté au notes.
+ */
+
 package tp1_martigny_prudhomme;
 
 import java.awt.Color;
@@ -13,7 +23,6 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.FileWriter;
@@ -39,9 +48,8 @@ import javafx.scene.paint.Paint;
 import javafx.scene.text.Text;
 
 /**
- * 
- * @author Tommy Prud'homme
- * et Alexandre Martigny
+ *
+ * @author Tommy Prud'homme et Alexandre Martigny
  */
 public class FXMLDocumentController implements Initializable {
 
@@ -139,10 +147,10 @@ public class FXMLDocumentController implements Initializable {
     }
 
     //***   Événements du GUI  ***//
-    
     /**
      * Prépare les éléments graphiques pour ajouter des données
-     * @param event 
+     *
+     * @param event
      */
     @FXML
     private void btnAjouterClick(ActionEvent event) {
@@ -152,7 +160,8 @@ public class FXMLDocumentController implements Initializable {
 
     /**
      * Supprime l'élément selectionné.
-     * @param event 
+     *
+     * @param event
      */
     @FXML
     private void btnSupprimerClick(ActionEvent event) {
@@ -170,10 +179,12 @@ public class FXMLDocumentController implements Initializable {
         nbEleves = util.supprimer(tabNotes, indexASupp, nbEleves);
         actualiserGrid();
     }
-    
+
     /**
-     * Remplis et déverouille les éléments graphique nécéssaires à la modification
-     * @param event 
+     * Remplis et déverouille les éléments graphique nécéssaires à la
+     * modification
+     *
+     * @param event
      */
     @FXML
     private void btnModifierClick(ActionEvent event) {
@@ -195,10 +206,11 @@ public class FXMLDocumentController implements Initializable {
             txfTP2.setText(String.valueOf(tabNotes[lsvDA.getSelectionModel().getSelectedIndex()][TP2]));
         }
     }
-    
+
     /**
      * Annule la modification/l'ajout
-     * @param event 
+     *
+     * @param event
      */
     @FXML
     private void btnAnnulerClick(ActionEvent event) {
@@ -208,47 +220,72 @@ public class FXMLDocumentController implements Initializable {
 
     /**
      * Confirme la modification ou l'ajout lors du clic du bouton OK
-     * @param event 
+     *
+     * @param event
      */
     @FXML
     private void btnOkClick(ActionEvent event) {
         switch (modeToggle) {
             case "ajouter":
-                double[] notes = new double[NB_EVALS + 2];
-                notes[DA] = Integer.parseInt(txfDA.getText());
-                notes[EXA1] = Integer.parseInt(txfExam1.getText());
-                notes[EXA2] = Integer.parseInt(txfExam2.getText());
-                notes[TP1] = Integer.parseInt(txfTP1.getText());
-                notes[TP2] = Integer.parseInt(txfTP2.getText());
-                notes[TOTAL] = calculerTotal(notes);
-                boolean notesValides = true;
-                for (int i = 1; i < notes.length; i++) {
-                    if (!(notes[i] <= 100 && notes[i] >= 0)) {
-                        notesValides = false;
+                try {
+                    double[] notes = new double[NB_EVALS + 2];
+                    notes[DA] = Integer.parseInt(txfDA.getText());
+                    notes[EXA1] = Integer.parseInt(txfExam1.getText());
+                    notes[EXA2] = Integer.parseInt(txfExam2.getText());
+                    notes[TP1] = Integer.parseInt(txfTP1.getText());
+                    notes[TP2] = Integer.parseInt(txfTP2.getText());
+                    notes[TOTAL] = calculerTotal(notes);
+
+                    boolean notesValides = true;
+                    for (int i = 1; i < notes.length; i++) {
+                        if (!(notes[i] <= 100 && notes[i] >= 0)) {
+                            notesValides = false;
+                        }
                     }
-                }
-                if (notesValides) {
-                    nbEleves = util.ajouter(tabNotes, notes, nbEleves);
-                    actualiserGrid();
-                    enableDataCtrls(false);
-                } else {
+
+                    if (notesValides) {
+                        nbEleves = util.ajouter(tabNotes, notes, nbEleves);
+                        lsvDA.getItems().add(txfDA.getText());
+                        actualiserGrid();
+                        enableDataCtrls(false);
+                    }
+
+                } catch (NumberFormatException e) {
                     Alert alert = new Alert(AlertType.ERROR);
                     alert.setTitle("Erreur!");
-                    alert.setContentText("Entrez des notes entre 0 et 100!");
+                    alert.setHeaderText("Des problèmes on été détecté");
+                    alert.setContentText("Entrez des notes (En nombres entiers) entre 0 et 100!");
                     alert.showAndWait();
+                    txfDA.setText("");
+                    txfExam1.setText("");
+                    txfExam2.setText("");
+                    txfTP1.setText("");
+                    txfTP2.setText("");
                 }
                 break;
 
             case "modifier":
-                double[] note = new double[NB_EVALS + 1];
-                note[0] = Integer.parseInt(txfExam1.getText());
-                note[1] = Integer.parseInt(txfExam2.getText());
-                note[2] = Integer.parseInt(txfTP1.getText());
-                note[3] = Integer.parseInt(txfTP2.getText());
-                note[4] = calculerTotal(note);
-                util.modifier(tabNotes, note, lsvDA.getSelectionModel().getSelectedIndex());
-                actualiserGrid();
-                enableDataCtrls(false);
+                try {
+                    double[] note = new double[NB_EVALS + 1];
+                    note[0] = Integer.parseInt(txfExam1.getText());
+                    note[1] = Integer.parseInt(txfExam2.getText());
+                    note[2] = Integer.parseInt(txfTP1.getText());
+                    note[3] = Integer.parseInt(txfTP2.getText());
+                    note[4] = calculerTotal(note);
+                    util.modifier(tabNotes, note, lsvDA.getSelectionModel().getSelectedIndex());
+                    actualiserGrid();
+                    enableDataCtrls(false);
+                } catch (NumberFormatException e) {
+                    Alert alert = new Alert(AlertType.ERROR);
+                    alert.setTitle("Erreur!");
+                    alert.setHeaderText("Des problèmes on été détecté");
+                    alert.setContentText("Entrez des notes (En nombres entiers) entre 0 et 100!");
+                    alert.showAndWait();
+                    txfExam1.setText("");
+                    txfExam2.setText("");
+                    txfTP1.setText("");
+                    txfTP2.setText("");
+                }
                 break;
 
             default:
@@ -256,11 +293,12 @@ public class FXMLDocumentController implements Initializable {
                 break;
         }
     }
-    
+
     /**
      * Confirme la sauvegarde puis quitte
+     *
      * @param event
-     * @throws IOException 
+     * @throws IOException
      */
     @FXML
     private void btnQuitter(ActionEvent event) throws IOException {
@@ -269,18 +307,18 @@ public class FXMLDocumentController implements Initializable {
         alert.setContentText("Voulez vous enregistrer?");
         alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
         Optional<ButtonType> result = alert.showAndWait();
-            if(result.get() == ButtonType.YES){
-                sauverClass();
-                System.exit(0);
-            }
-            else if(result.get() == ButtonType.NO){
-                System.exit(0);
-            }
+        if (result.get() == ButtonType.YES) {
+            sauverClass();
+            System.exit(0);
+        } else if (result.get() == ButtonType.NO) {
+            System.exit(0);
+        }
     }
-    
+
     /**
      * changement du tri dans le combobox
-     * @param event 
+     *
+     * @param event
      */
     @FXML
     private void cmbTriChanged(ActionEvent event) {
@@ -290,7 +328,8 @@ public class FXMLDocumentController implements Initializable {
 
     /**
      * Met à jour les TextFields lors du clic sur un élément du listview
-     * @param event 
+     *
+     * @param event
      */
     @FXML
     private void lsvDAClick(MouseEvent event) {
@@ -332,7 +371,6 @@ public class FXMLDocumentController implements Initializable {
     }
 
     //***   Gestion du GridPane et génération des tabDA et tabNotes ***//
-    
     //Supprime puis recrée les colones et lignes du GridPane
     public void creerGrille() {
         gridNotes.getRowConstraints().clear();
@@ -445,8 +483,9 @@ public class FXMLDocumentController implements Initializable {
 
     /**
      * Sauve les changements dans notes.txt
+     *
      * @throws FileNotFoundException
-     * @throws IOException 
+     * @throws IOException
      */
     public void sauverClass() throws FileNotFoundException, IOException {
         FileWriter fw = new FileWriter("notes.txt");
@@ -506,7 +545,7 @@ public class FXMLDocumentController implements Initializable {
         lblMinTP1.setText(String.valueOf(util.minEval(tabNotes, TP1)));
         lblMinTP2.setText(String.valueOf(util.minEval(tabNotes, TP2)));
     }
-    
+
     //Calcule le total des notes des élèves
     public double calculerTotal(double[] note) {
         return (note[EXA1] * 25 / 100) + (note[EXA2] * 30 / 100) + (note[TP1] * 20 / 100) + (note[TP2] * 25 / 100);
